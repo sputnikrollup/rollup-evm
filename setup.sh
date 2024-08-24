@@ -1,6 +1,5 @@
 #!/bin/bash
 
-
 # validate dependencies are installed
 command -v jq > /dev/null 2>&1 || { echo >&2 "jq not installed. More info: https://stedolan.github.io/jq/download/"; exit 1; }
 
@@ -19,15 +18,12 @@ else
     echo "MONIKER: $MONIKER"
 fi
 
-
-
 KEYRING="test"
 KEYALGO="eth_secp256k1"
 LOGLEVEL="info"
 # trace evm
 TRACE="--trace"
 # TRACE=""
-
 
 # remove existing daemon and client
 rm -rf ~/.aircosmicd*
@@ -65,7 +61,7 @@ cat $HOME/.aircosmicd/config/genesis.json | jq '.consensus_params["block"]["max_
 ./build/aircosmicd validate-genesis
 
 # disable produce empty block and enable prometheus metrics
-if [[ "$OSTYPE" == "darwin"* ]]; then
+if [ "${OSTYPE#darwin}" != "$OSTYPE" ]; then
     sed -i '' 's/create_empty_blocks = true/create_empty_blocks = false/g' $HOME/.aircosmicd/config/config.toml
     sed -i '' 's/prometheus = false/prometheus = true/' $HOME/.aircosmicd/config/config.toml
     sed -i '' 's/prometheus-retention-time = 0/prometheus-retention-time  = 1000000000000/g' $HOME/.aircosmicd/config/app.toml
@@ -77,9 +73,9 @@ else
     sed -i 's/enabled = false/enabled = true/g' $HOME/.aircosmicd/config/app.toml
 fi
 
-if [[ $1 == "pending" ]]; then
+if [ "$1" = "pending" ]; then
     echo "pending mode is on, please wait for the first block committed."
-    if [[ $OSTYPE == "darwin"* ]]; then
+    if [ "${OSTYPE#darwin}" != "$OSTYPE" ]; then
         sed -i '' 's/create_empty_blocks_interval = "0s"/create_empty_blocks_interval = "30s"/g' $HOME/.aircosmicd/config/config.toml
         sed -i '' 's/timeout_propose = "3s"/timeout_propose = "30s"/g' $HOME/.aircosmicd/config/config.toml
         sed -i '' 's/timeout_propose_delta = "500ms"/timeout_propose_delta = "5s"/g' $HOME/.aircosmicd/config/config.toml
@@ -103,4 +99,3 @@ if [[ $1 == "pending" ]]; then
 fi
 
 echo "Initialized the Rollup-evm node successfully"
-
